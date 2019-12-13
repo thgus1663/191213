@@ -32,7 +32,9 @@ def send():
     requests.get(send_url)
     return render_template('send.html')
 
-
+@app.route(f'/telegram', methods=['POST'])
+def telegram():
+    return 'ok', 200
 
 
 
