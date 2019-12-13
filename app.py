@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 api_url = 'https://api.telegram.org/bot'
 token = config('TELEGRAM_BOT_TOKEN')
+google_key=config('GOOGLE_KEY')
 
 @app.route('/')
 def hello():
@@ -34,6 +35,31 @@ def send():
 
 @app.route(f'/telegram', methods=['POST'])
 def telegram():
+    req=request.get_json()
+    #print(req)
+    user_id = req["message"]["from"]["id"]
+    user_input= req["message"]["text"]
+
+    if user_input=="로또":
+        return_data="로또를 입력하셨습니다."
+    elif user_input[0:3]=="번역 ":
+        google_api_url = "https://translation.googleapis.com/language/translate/v2"
+        before_text=user_input[3:]
+        data={
+            'q':before_text,
+            'source':'ko',
+            'target':'en'
+        }
+        requests_url=f'{google_api_url}?key={google_key}'
+        res=requests.post(requests_url, data).json()
+        #print(res)
+        return_data=res["data"]["translations"][0]["translatedText"]
+    else:
+        return_data="지금 사용 가능하는 명령어는 로또입니다."
+    send_url = f'https://api.telegram.org/bot{token}/sendMessage?text={return_data}&chat_id={user_id}'
+    requests.get(send_url)
+    #print(user_id)
+    #print(user_input)
     return 'ok', 200
 
 
